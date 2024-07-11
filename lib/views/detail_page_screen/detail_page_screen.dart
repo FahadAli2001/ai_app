@@ -1,7 +1,8 @@
-import 'dart:developer';
 import 'dart:io';
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:google_ml_vision/google_ml_vision.dart';
+import 'package:flutter/services.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -16,84 +17,89 @@ class _DetailScreenState extends State<DetailScreen> {
   var result = '';
   bool isImageLoaded = false;
   bool isFaceDetected = false;
-  late List<Rect> rect = []; // Initialize rect as an empty list
+  List<Rect> rect = [];
 
-  getImageFromGallery() async {
+  Future getImageFromGallery() async {
     var tempStore = await ImagePicker().pickImage(source: ImageSource.gallery);
 
-    imageFile = await tempStore?.readAsBytes();
-    imageFile = await decodeImageFromList(imageFile!);
+    imageFile = await tempStore!.readAsBytes();
+    imageFile = await decodeImageFromList(imageFile);
 
     setState(() {
-      pickedImage = File(tempStore!.path);
+      pickedImage = File(tempStore.path);
       isImageLoaded = true;
       isFaceDetected = false;
+
+      imageFile = imageFile;
     });
   }
 
-  readTextfromanImage() async {
-    result = '';
-    GoogleVisionImage myImage = GoogleVisionImage.fromFile(pickedImage);
-    TextRecognizer recognizeText = GoogleVision.instance.textRecognizer();
-    VisionText readText = await recognizeText.processImage(myImage);
+    void copyToClipboard() {
+    Clipboard.setData(ClipboardData(text: result));
+    ScaffoldMessenger.of(context).showSnackBar(
+     const SnackBar(content: Text('Text copied to clipboard')),
+    );
+  }
 
-    for (TextBlock block in readText.blocks) {
-      for (TextLine line in block.lines) {
-        for (TextElement word in line.elements) {
-          setState(() {
-            result = '$result ${word.text}';
-          });
-        }
+Future readTextfromanImage() async {
+  result = '';
+  final inputImage = InputImage.fromFile(pickedImage);
+  final textDetector = GoogleMlKit.vision.textRecognizer();
+  final RecognizedText recognizedText = await textDetector.processImage(inputImage);
+
+  for (TextBlock block in recognizedText.blocks) {
+    for (TextLine line in block.lines) {
+      for (TextElement element in line.elements) {
+        setState(() {
+          result += ' ${element.text}';
+        });
       }
     }
   }
-
-  decodeBarCode() async {
-  try {
-    result = '';
-    GoogleVisionImage myImage = GoogleVisionImage.fromFile(pickedImage);
-    log(pickedImage.toString()); 
-    BarcodeDetector barcodeDetector = GoogleVision.instance.barcodeDetector();
-    List<Barcode> barCodes = await barcodeDetector.detectInImage(myImage);
-
-    for (Barcode readableCode in barCodes) {
-      setState(() {
-        result = readableCode.displayValue ?? 'No barcode detected';
-      });
-    }
-    log(result); // Use print for debugging instead of log() for simplicity
-  } catch (e) {
-    log('Barcode detection failed: $e');
-    setState(() {
-      result = 'Barcode detection failed';
-    });
-  }
+  log(result);
 }
 
 
-  Future<void> labelsread() async {
-    result = '';
-    GoogleVisionImage myImage = GoogleVisionImage.fromFile(pickedImage);
-    ImageLabeler labeler = GoogleVision.instance.imageLabeler();
-    List<ImageLabel> labels = await labeler.processImage(myImage);
+ Future decodeBarCode() async {
+    try {
+      result = '';
+      final inputImage = InputImage.fromFile(pickedImage);
+      final barcodeScanner = GoogleMlKit.vision.barcodeScanner();
+      final List<Barcode> barcodes = await barcodeScanner.processImage(inputImage);
 
-    for (ImageLabel label in labels) {
-      final String? text = label.text;
-      final double? confidence = label.confidence;
-      setState(() {
-        result = '$result $text $confidence\n';
-      });
+      for (Barcode barcode in barcodes) {
+        setState(() {
+          result = barcode.displayValue ?? '';
+        });
+      }
+      log(result);
+    } catch (e) {
+      log('Error scanning barcode: $e');
     }
   }
-
-  Future<void> detectFace() async {
+  Future labelsread() async {
     result = '';
-    GoogleVisionImage myImage = GoogleVisionImage.fromFile(pickedImage);
-    FaceDetector faceDetector = GoogleVision.instance.faceDetector();
-    List<Face> faces = await faceDetector.processImage(myImage);
+    final inputImage = InputImage.fromFile(pickedImage);
+    final imageLabeler = GoogleMlKit.vision.imageLabeler();
+    final List<ImageLabel> labels = await imageLabeler.processImage(inputImage);
 
-    // Clear existing rectangles
-    rect.clear();
+    for (ImageLabel label in labels) {
+      final String text = label.label;
+      final double confidence = label.confidence;
+      setState(() {
+        result += ' $text     $confidence\n';
+      });
+    }
+    log(result);
+  }
+
+  Future detectFace() async {
+    result = '';
+    final inputImage = InputImage.fromFile(pickedImage);
+    final faceDetector = GoogleMlKit.vision.faceDetector();
+    final List<Face> faces = await faceDetector.processImage(inputImage);
+
+    rect = [];
 
     for (Face face in faces) {
       rect.add(face.boundingBox);
@@ -125,14 +131,32 @@ class _DetailScreenState extends State<DetailScreen> {
   Widget build(BuildContext context) {
     selectedItem = ModalRoute.of(context)!.settings.arguments.toString();
     return Scaffold(
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: GestureDetector(
+          onTap: () {
+            copyToClipboard();
+          },
+          child: Container(
+            width: 300,
+            height: 60,
+            color: Colors.cyan,
+            child:const Center(child: Text("Copy Text ",
+            style: TextStyle(
+              color: Colors.white
+            ),)),
+          ),
+        ),
+      ),
       appBar: AppBar(
         title: Text(selectedItem),
         actions: [
           ElevatedButton(
+            
             onPressed: getImageFromGallery,
             child: Icon(
               Icons.add_a_photo,
-              color: Colors.blue,
+              color: Colors.cyan,
             ),
           )
         ],
@@ -146,8 +170,11 @@ class _DetailScreenState extends State<DetailScreen> {
                     height: 250.0,
                     width: 250.0,
                     decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: FileImage(pickedImage), fit: BoxFit.cover)),
+                      image: DecorationImage(
+                        image: FileImage(pickedImage),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 )
               : isImageLoaded && isFaceDetected
@@ -155,10 +182,10 @@ class _DetailScreenState extends State<DetailScreen> {
                       child: Container(
                         child: FittedBox(
                           child: SizedBox(
-                            width: imageFile!.width.toDouble(),
-                            height: imageFile!.height.toDouble(),
+                            width: imageFile.width.toDouble(),
+                            height: imageFile.height.toDouble(),
                             child: CustomPaint(
-                              painter: FacePainter(rect: rect, imageFile: imageFile!),
+                              painter: FacePainter(rect: rect, imageFile: imageFile),
                             ),
                           ),
                         ),
@@ -173,8 +200,8 @@ class _DetailScreenState extends State<DetailScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: ()  {
-            detectMLFeature(selectedItem);
+        onPressed: () {
+          detectMLFeature(selectedItem);
         },
         child: Icon(Icons.check),
       ),
@@ -194,9 +221,9 @@ class FacePainter extends CustomPainter {
       canvas.drawImage(imageFile, Offset.zero, Paint());
     }
 
-    for (Rect rectange in rect) {
+    for (Rect rectangle in rect) {
       canvas.drawRect(
-        rectange,
+        rectangle,
         Paint()
           ..color = Colors.teal
           ..strokeWidth = 6.0
@@ -206,5 +233,7 @@ class FacePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
 }
