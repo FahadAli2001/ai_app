@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "932695552130",
+    "project_id": "ai-app-for-glasses",
+    "storage_bucket": "ai-app-for-glasses.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:932695552130:android:c9f7fd89d2e57200a6c49b",
+        "android_client_info": {
+          "package_name": "com.ai.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiuBF30_seSWogmch3mxejHlYMxdFXRBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
