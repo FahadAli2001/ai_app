@@ -34,10 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
             },
-            child: Card(
-              elevation: 15,
-              child: ListTile(
-                title: Text(itemsList[index]),
+            child: Tooltip(
+              triggerMode: TooltipTriggerMode.longPress,
+              message: "tap",
+              child: Card(
+                elevation: 15,
+                child: ListTile(
+                  
+                  title: Text(itemsList[index]),
+                ),
               ),
             ),
           ),
