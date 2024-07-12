@@ -1,3 +1,4 @@
+ 
 import 'dart:io';
 import 'dart:developer';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class _DetailScreenState extends State<DetailScreen> {
   List<Rect> rect = [];
 
   Future getImageFromGallery() async {
-    var tempStore = await ImagePicker().pickImage(source: ImageSource.gallery);
+    var tempStore = await ImagePicker().pickImage(source: ImageSource.camera);
 
     imageFile = await tempStore!.readAsBytes();
     imageFile = await decodeImageFromList(imageFile);
@@ -77,6 +78,7 @@ Future readTextfromanImage() async {
       log('Error scanning barcode: $e');
     }
   }
+  
   Future labelsread() async {
     result = '';
     final inputImage = InputImage.fromFile(pickedImage);
@@ -98,13 +100,10 @@ Future readTextfromanImage() async {
     final inputImage = InputImage.fromFile(pickedImage);
     final faceDetector = GoogleMlKit.vision.faceDetector();
     final List<Face> faces = await faceDetector.processImage(inputImage);
-
     rect = [];
-
     for (Face face in faces) {
       rect.add(face.boundingBox);
     }
-
     setState(() {
       isFaceDetected = true;
     });
@@ -182,8 +181,8 @@ Future readTextfromanImage() async {
                       child: Container(
                         child: FittedBox(
                           child: SizedBox(
-                            width: imageFile.width.toDouble(),
-                            height: imageFile.height.toDouble(),
+                            width: 500,
+                            height: 500,
                             child: CustomPaint(
                               painter: FacePainter(rect: rect, imageFile: imageFile),
                             ),
