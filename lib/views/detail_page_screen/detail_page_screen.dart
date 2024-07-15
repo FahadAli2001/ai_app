@@ -21,7 +21,7 @@ class _DetailScreenState extends State<DetailScreen> {
   List<Rect> rect = [];
 
   Future getImageFromGallery() async {
-    var tempStore = await ImagePicker().pickImage(source: ImageSource.camera);
+    var tempStore = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     imageFile = await tempStore!.readAsBytes();
     imageFile = await decodeImageFromList(imageFile);
@@ -153,7 +153,7 @@ Future readTextfromanImage() async {
           ElevatedButton(
             
             onPressed: getImageFromGallery,
-            child: Icon(
+            child:const Icon(
               Icons.add_a_photo,
               color: Colors.cyan,
             ),
