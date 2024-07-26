@@ -7,13 +7,17 @@ import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 
 class DetailScreen extends StatefulWidget {
+  const DetailScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _DetailScreenState createState() => _DetailScreenState();
 }
 
 class _DetailScreenState extends State<DetailScreen> {
   String selectedItem = '';
   late File pickedImage;
+  // ignore: prefer_typing_uninitialized_variables
   var imageFile;
   var result = '';
   bool isImageLoaded = false;
@@ -45,6 +49,7 @@ class _DetailScreenState extends State<DetailScreen> {
 Future readTextfromanImage() async {
   result = '';
   final inputImage = InputImage.fromFile(pickedImage);
+  // ignore: deprecated_member_use
   final textDetector = GoogleMlKit.vision.textRecognizer();
   final RecognizedText recognizedText = await textDetector.processImage(inputImage);
 
@@ -65,6 +70,7 @@ Future readTextfromanImage() async {
     try {
       result = '';
       final inputImage = InputImage.fromFile(pickedImage);
+      // ignore: deprecated_member_use
       final barcodeScanner = GoogleMlKit.vision.barcodeScanner();
       final List<Barcode> barcodes = await barcodeScanner.processImage(inputImage);
 
@@ -82,6 +88,7 @@ Future readTextfromanImage() async {
   Future labelsread() async {
     result = '';
     final inputImage = InputImage.fromFile(pickedImage);
+    // ignore: deprecated_member_use
     final imageLabeler = GoogleMlKit.vision.imageLabeler();
     final List<ImageLabel> labels = await imageLabeler.processImage(inputImage);
 
@@ -98,6 +105,7 @@ Future readTextfromanImage() async {
   Future detectFace() async {
     result = '';
     final inputImage = InputImage.fromFile(pickedImage);
+    // ignore: deprecated_member_use
     final faceDetector = GoogleMlKit.vision.faceDetector();
     final List<Face> faces = await faceDetector.processImage(inputImage);
     rect = [];
@@ -162,7 +170,7 @@ Future readTextfromanImage() async {
       ),
       body: Column(
         children: [
-          SizedBox(height: 100),
+          const SizedBox(height: 100),
           isImageLoaded && !isFaceDetected
               ? Center(
                   child: Container(
@@ -178,20 +186,18 @@ Future readTextfromanImage() async {
                 )
               : isImageLoaded && isFaceDetected
                   ? Center(
-                      child: Container(
-                        child: FittedBox(
-                          child: SizedBox(
-                            width: 500,
-                            height: 500,
-                            child: CustomPaint(
-                              painter: FacePainter(rect: rect, imageFile: imageFile),
-                            ),
+                      child: FittedBox(
+                        child: SizedBox(
+                          width: 500,
+                          height: 500,
+                          child: CustomPaint(
+                            painter: FacePainter(rect: rect, imageFile: imageFile),
                           ),
                         ),
                       ),
                     )
                   : Container(),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(result),
@@ -202,7 +208,7 @@ Future readTextfromanImage() async {
         onPressed: () {
           detectMLFeature(selectedItem);
         },
-        child: Icon(Icons.check),
+        child: const Icon(Icons.check),
       ),
     );
   }
@@ -210,6 +216,7 @@ Future readTextfromanImage() async {
 
 class FacePainter extends CustomPainter {
   List<Rect> rect;
+  // ignore: prefer_typing_uninitialized_variables
   var imageFile;
 
   FacePainter({required this.rect, required this.imageFile});

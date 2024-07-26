@@ -56,7 +56,7 @@ class _AiScreenState extends State<AiScreen> {
                 // ),
                 elevation: 0,
               ),
-              child: Icon(Icons.shopping_cart),
+              child:const Icon(Icons.shopping_cart),
             ),
           ),
         ],
@@ -71,7 +71,7 @@ class _AiScreenState extends State<AiScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => DetailScreen(),
+                    builder: (context) =>const DetailScreen(),
                     settings: RouteSettings(arguments: itemsList[index]),
                   ),
                 );

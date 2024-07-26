@@ -26,14 +26,14 @@ class _HomeScreenState extends State<HomeScreen> {
              Center(
                child: CupertinoButton(
                 color: Colors.amber,
-                child: Text("AI"), onPressed: (){
+                child:const Text("AI"), onPressed: (){
                 Navigator.push(context, MaterialPageRoute(builder: (context)=>const AiScreen()));
                }),
              ),
               Center(
                 child: CupertinoButton(
                   color: Colors.amberAccent,
-                  child: Text("Dragable"), onPressed: (){
+                  child:const Text("Dragable"), onPressed: (){
                 Navigator.push(context, MaterialPageRoute(builder: (context)=>const DragableScreen()));
                              }),
               )
